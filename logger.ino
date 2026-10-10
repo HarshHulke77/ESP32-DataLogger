@@ -33,7 +33,8 @@ void setup() {
   display.setTextColor(SSD1306_WHITE);
 
   SPI.begin(SD_SCK, SD_MISO, SD_MOSI, SD_CS);
-  sdOk = SD.begin(SD_CS);
+  unsigned long start = millis();
+while (!(sdOk = SD.begin(SD_CS)) && millis() - start < 3000) delay(100);
   Serial.println(sdOk ? "SD ready" : "SD mount FAILED");
 
   if (sdOk && !SD.exists(LOG_FILE)) {
