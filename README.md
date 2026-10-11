@@ -47,7 +47,7 @@ The pull-ups are the parallel result of the modules' own resistors, so no extern
 
 ## Notes and limitations
 
-- **Before RTC measurements RTC Module failed .** The DS1307 is rated for 4.5 V and above but runs here from 3V3. It counts and survives power loss, but the drift in seconds per day is still to be measured against a reference clock.
+- **RTC drift was never measured.** The DS1307 (rated 4.5 V and above, run here from 3V3) kept time through a 10 s power cut, then failed on 2026-10-11 before the 24-hour drift check could be done.
 - The BMP280 sits next to the ESP32 and reads warm (about 34.7 °C on a 34 °C day, creeping up as the board heats). Mount it away from the ESP32 for true room temperature.
 - The log is verified by counting lines on the ESP32 itself (no card reader was available), not by opening the file on a PC.
 - No data is buffered if the SD card is missing or fails: that sample is lost and the OLED shows `SD:ERR`.
