@@ -1,4 +1,5 @@
 # ESP32 Data Logger — Project 3
+Two firmware versions: logger.ino (single loop, DS1307, retired when the RTC failed on 2026-10-11) and logger_rtos.ino (current).
 
 Logs temperature and pressure with a real-time timestamp to an SD card as CSV, and shows the live values on an OLED. ESP32 + BMP280 + DS1307 RTC + SSD1306 OLED + microSD module. Arduino framework, single-loop firmware (no RTOS).
 
@@ -46,7 +47,7 @@ The pull-ups are the parallel result of the modules' own resistors, so no extern
 
 ## Notes and limitations
 
-- **RTC drift is not yet measured.** The DS1307 is rated for 4.5 V and above but runs here from 3V3. It counts and survives power loss, but the drift in seconds per day is still to be measured against a reference clock.
+- **Before RTC measurements RTC Module failed .** The DS1307 is rated for 4.5 V and above but runs here from 3V3. It counts and survives power loss, but the drift in seconds per day is still to be measured against a reference clock.
 - The BMP280 sits next to the ESP32 and reads warm (about 34.7 °C on a 34 °C day, creeping up as the board heats). Mount it away from the ESP32 for true room temperature.
 - The log is verified by counting lines on the ESP32 itself (no card reader was available), not by opening the file on a PC.
 - No data is buffered if the SD card is missing or fails: that sample is lost and the OLED shows `SD:ERR`.
@@ -59,6 +60,10 @@ The pull-ups are the parallel result of the modules' own resistors, so no extern
 | `sd_test.ino` | Mounts the SD card, writes and reads back a test file |
 | `oled_display.ino` | RTC + BMP280 on the OLED |
 | `logger.ino` | Full firmware: OLED + CSV logging |
+| `logger_rtos.ino`|three-task FreeRTOS logger|
+| `sd_reader.ino`|read-only log integrity checker|
+
+
 
 ## Bug Journal
 
@@ -104,7 +109,7 @@ One entry per non-trivial defect. Never delete entries.
 
 **Prevention** A success return only means the operation was accepted locally. Verify the guarantee in the layer that provides it: count rows, compare byte sizes. Same lesson as the QoS 0 discovery in Project 1.
 
-## 003 — SD logger FAIL at 4 Hz with open-write-close; SD card stalls of 0.5-0.63 s found while sizing the queue
+### 003 — SD logger FAIL at 4 Hz with open-write-close; SD card stalls of 0.5-0.63 s found while sizing the queue
 
 2026-10-11 · Project 3, ESP32 Data Logger · SD logging, Logger task
 
@@ -136,7 +141,7 @@ No FAIL line appeared in any run. Flush-row cost was about 0.3 ms in run A, 4.0-
 
 **Fix** Keep the file open, flush every 4 rows. Queue length 10 at 1 Hz, which is 10 s of buffer against a worst case of 0.627 s.
 
-**Cost** [FILL: 2hours]
+**Cost** About 2 Hours
 
 **Prevention** Size queues from measured worst case, not typical: 17.8 ms typical versus 627 ms worst is a 35x gap. Log which step failed, not only that something failed.
 
